@@ -7,19 +7,78 @@ output:
 
 
 ## Loading and preprocessing the data
+### 1. Load the data (unzip the original zip file and get activity.csv)
+```{r GetData,echo=TRUE}
+data<-read.csv("activity.csv")
+```
+### 2. Process/transform the data into a format suitable for analysis.
 
+```{r Transform,echo=TRUE}
 
+# convert column "interval" into factor:
+data <- transform(data, interval = factor(interval)) 
 
-## What is mean total number of steps taken per day?
+```
+## What is mean total number of steps taken per day
+```{r GetMeanStepsPerDay1,fig.height=8,fig.width=14, echo=TRUE}
+#Remove warning message when plotting with missing value
+options(warn=-1)
+#install.packages("ggplot2")
+library(ggplot2)
+StepSumPerDay <- tapply(data$steps, data$date, FUN = sum)
+newDF<-data.frame(date=names(StepSumPerDay), stepSum=StepSumPerDay)
+ggplot(newDF,aes(x=date,y=stepSum))+
+        geom_histogram(stat='identity', fill="lightblue", colour="black")+
+        theme(axis.text.x = element_text(angle=60, hjust=1))
+#if base graphic needed, then use code below:
+# barplot(StepSumPerDay)
 
-
-
+summary(StepSumPerDay,rm.na=T)
+```
 ## What is the average daily activity pattern?
+```{r GetStepsPerInterval,fig.height=8,fig.width=14, echo=TRUE}
+#install.packages("plyr")
+library(plyr)
+StepsPerInterveal<-ddply(data, c("interval"),summarize, StepMean=mean(steps,na.rm = TRUE))
 
+with(StepsPerInterveal, plot(interval, StepMean,type="l",xlab = "Interval",ylab="Averaged Steps",col="black")) 
 
+lines(StepsPerInterveal$interval, StepsPerInterveal$StepMean,type="l",xlab = "Interval",ylab="Averaged Steps",col="blue")
+```
 
-## Imputing missing values
+### Base on the plot, we can apprently observe that the interval 845 (it's 8:45AM) has the maximum averaged number of steps each day.
 
+### Imputing missing values
+### 1.Calculate and report the total number of missing values in the dataset 
+###   ==develop a function NAreport to report NA distribution 
+###   ==NAtype=c("NA","","N/A","NULL","--","NONE")
+```{r MissingDataImputation,fig.height=8,fig.width=14, echo=TRUE}
+NAsum<-sum(is.na(data$steps))
+```
+The total number of missing values is: `r NAsum`
 
+### 2.Devise a strategy for filling in all of the missing values in the dataset. 
+### The strategy does not need to be sophisticated. For example, you could use the
+### mean/median for that day, or the mean for that 5-minute interval, etc.
+### Here, we use the mean for that 5-minute interval to impute NAs.
+
+### 3.Create a new dataset that is equal to the original dataset but with the missing data filled in.
+```{r NewDataWithNAfilled,echo=TRUE}
+dataNew<-data
+dataNew$steps[is.na(dataNew$steps)]<- StepsPerInterveal$StepMean[match(dataNew$interval, StepsPerInterveal$interval)]
+```
+
+### 4.Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day
+```{r GetMeanStepsPerDayfromNewData,fig.height=8,fig.width=14, echo=TRUE}
+StepSumPerDayNew <- tapply(dataNew$steps, dataNew$date, FUN = sum)
+newDF<-data.frame(date=names(StepSumPerDayNew), stepSum=StepSumPerDayNew)
+ggplot(newDF,aes(x=date,y=stepSum))+
+        geom_histogram(stat='identity', fill="lightblue", colour="black")+
+        theme(axis.text.x = element_text(angle=60, hjust=1))
+summary(StepSumPerDayNew,rm.na=T)
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+# convert column "interval" into factor, and "date" into datetime format:
+#data$date<-strptime(data$date,"%Y%m/%d") 
