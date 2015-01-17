@@ -1,4 +1,9 @@
-# Reproducible Research: Peer Assessment 1
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+---
 
 #### Special Note: As we could notice there's post in discussion forum of this course about [Make a Histogram.not a Bar](https://class.coursera.org/repdata-010/forum/thread?thread_id=9). I'm sure there are different thoughts on this, so I listed both kind of histogram plot from Base Graphic system(histogram, not bar) and ggplot2 sysrtem (in which geom_histogram is same as geom_bar).
 ## Loading and preprocessing the data
@@ -24,7 +29,7 @@ StepSumPerDay <- tapply(data$steps, data$date, FUN = sum)
 hist(StepSumPerDay,breaks=20,col = "blue",main="Histogram of total number of steps per day",xlab="Total number of Steps per day(steps)",ylab="Frequency (days)")
 ```
 
-![](PA1_template_files/figure-html/GetMeanStepsPerDay1-1.png) 
+![plot of chunk GetMeanStepsPerDay1](figure/GetMeanStepsPerDay1-1.png) 
 
 ###For Detailed steps per day distribution, see another histogram plot from ggplot2 below
 
@@ -39,7 +44,7 @@ ggplot(newDF,aes(x=date,y=stepSum))+
         theme(axis.text.x = element_text(angle=60, hjust=1))
 ```
 
-![](PA1_template_files/figure-html/GetMeanStepsPerDay2-1.png) 
+![plot of chunk GetMeanStepsPerDay2](figure/GetMeanStepsPerDay2-1.png) 
 
 ### 2.Calculate and report the mean and median total number of steps taken per day
 
@@ -76,7 +81,7 @@ with(StepsPerInterveal, plot(interval, StepMean,type="l",xlab = "Interval",ylab=
 lines(StepsPerInterveal$interval, StepsPerInterveal$StepMean,type="l",xlab = "Interval",ylab="Averaged Steps",col="blue")
 ```
 
-![](PA1_template_files/figure-html/GetStepsPerInterval-1.png) 
+![plot of chunk GetStepsPerInterval](figure/GetStepsPerInterval-1.png) 
 
 ### 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 #### Base on the plot above, apparently we can observe that the interval 845 (it's 8:45AM) has the maximum averaged number of steps each day.
@@ -108,7 +113,7 @@ StepSumPerDayNew <- tapply(dataNew$steps, dataNew$date, FUN = sum)
 hist(StepSumPerDayNew,breaks=20,col="green",main="Histogram of total number of steps per day(NA filled)",xlab="Total number of Steps per day(steps)",ylab="Frequency(days)")
 ```
 
-![](PA1_template_files/figure-html/GetMeanStepsPerDayfromNewData1-1.png) 
+![plot of chunk GetMeanStepsPerDayfromNewData1](figure/GetMeanStepsPerDayfromNewData1-1.png) 
 
 ###For Detailed steps per day distribution, see another histogram plot from ggplot2 below
 
@@ -119,7 +124,7 @@ ggplot(newDF,aes(x=date,y=stepSum))+
         theme(axis.text.x = element_text(angle=60, hjust=1))
 ```
 
-![](PA1_template_files/figure-html/GetMeanStepsPerDayfromNewData2-1.png) 
+![plot of chunk GetMeanStepsPerDayfromNewData2](figure/GetMeanStepsPerDayfromNewData2-1.png) 
 
 ### Calculate and report the mean and median total number of steps taken per day.
 
@@ -169,4 +174,4 @@ StepsPerIntervealDay<-ddply(dataNew, c("interval","day"),summarize, StepMean=mea
 xyplot(StepMean ~ interval | day , data = StepsPerIntervealDay, type="l",main="Averaged Steps on Weekday and Weekend ",ylab = "Averaged Steps", xlab = "Interval", scales=list(y=list(tick.number=15),x=list(tick.number=25,at = seq(1, 288, 15))), layout = c(1, 2))
 ```
 
-![](PA1_template_files/figure-html/MakeWeekdayPlot-1.png) 
+![plot of chunk MakeWeekdayPlot](figure/MakeWeekdayPlot-1.png) 
