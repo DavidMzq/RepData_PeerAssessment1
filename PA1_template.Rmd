@@ -10,6 +10,8 @@ output:
 ### 1. Load the data (unzip the original zip file and get activity.csv)
 ```{r GetData,echo=TRUE}
 data<-read.csv("activity.csv")
+#Set Locale thus date column could be judged by weekday's name
+Sys.setlocale('LC_ALL','English')
 ```
 ### 2. Process/transform the data into a format suitable for analysis.
 
@@ -44,8 +46,6 @@ StepsPerInterveal<-ddply(data, c("interval"),summarize, StepMean=mean(steps,na.r
 with(StepsPerInterveal, plot(interval, StepMean,type="l",xlab = "Interval",ylab="Averaged Steps",col="blue")) 
 
 lines(StepsPerInterveal$interval, StepsPerInterveal$StepMean,type="l",xlab = "Interval",ylab="Averaged Steps",col="blue")
-
-
 
 ```
 
@@ -85,8 +85,9 @@ summary(StepSumPerDayNew,rm.na=T)
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```{r AddWeekendColumn,fig.height=8,fig.width=14, echo=TRUE}
+```{r AddWeekendColumn,fig.height=12,fig.width=16, echo=TRUE}
 # convert column "date" into datetime format:
+library(lattice)
 dataNew$date<-strptime(dataNew$date,"%Y-%m-%d") 
 #1.Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
 dataNew$day = ifelse(weekdays(dataNew$date) == "Saturday" | weekdays(dataNew$date) == "Sunday", "weekend", "weekday")
@@ -96,12 +97,13 @@ dataNew <- transform(dataNew, day = factor(day))
 #2.Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
 
 #Remove date variable in order to run ddplyr function
-dataNew<-dataNew[ , !names(dataNew) %in% c("date")] 
+#dataNew<-dataNew[ , !names(dataNew) %in% c("date")] 
 
 #get the average datasets both for weekday and weekend
 StepsPerIntervealDay<-ddply(dataNew, c("interval","day"),summarize, StepMean=mean(steps,na.rm = TRUE))
 #StepsPerIntervealWeekday<-StepsPerIntervealDay[StepsPerIntervealDay$day=="weekday",]
 #StepsPerIntervealWeekend<-StepsPerIntervealDay[StepsPerIntervealDay$day=="weekend",]
 
-xyplot(StepMean ~ interval | day  , data = StepsPerIntervealDay, layout = c(1, 2))
+xyplot(StepMean ~ interval | day , data = StepsPerIntervealDay, type="l",main="Averaged Steps on Weekday and Weekend ",ylab = "Averaged Steps", xlab = "Interval", scales=list(y=list(tick.number=15),x=list(tick.number=25,at = seq(1, 288, 15))), layout = c(1, 2))
+
 ```
