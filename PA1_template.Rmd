@@ -41,9 +41,12 @@ summary(StepSumPerDay,rm.na=T)
 library(plyr)
 StepsPerInterveal<-ddply(data, c("interval"),summarize, StepMean=mean(steps,na.rm = TRUE))
 
-with(StepsPerInterveal, plot(interval, StepMean,type="l",xlab = "Interval",ylab="Averaged Steps",col="black")) 
+with(StepsPerInterveal, plot(interval, StepMean,type="l",xlab = "Interval",ylab="Averaged Steps",col="blue")) 
 
 lines(StepsPerInterveal$interval, StepsPerInterveal$StepMean,type="l",xlab = "Interval",ylab="Averaged Steps",col="blue")
+
+
+
 ```
 
 ### Base on the plot, we can apprently observe that the interval 845 (it's 8:45AM) has the maximum averaged number of steps each day.
@@ -78,7 +81,27 @@ ggplot(newDF,aes(x=date,y=stepSum))+
 summary(StepSumPerDayNew,rm.na=T)
 ```
 
+###With Filled missing value, we could find that the new Mean value of steps tasken per day is same as the original one while the Median is a little different (10770 vs 10760) but could be ignored. So the only impact of the filled missing data is on the special day in which there are missing values and get an obvious increasing value in the plot. Anyway, it doesn't impact the data in whole.
+
 ## Are there differences in activity patterns between weekdays and weekends?
 
-# convert column "interval" into factor, and "date" into datetime format:
-#data$date<-strptime(data$date,"%Y%m/%d") 
+```{r AddWeekendColumn,fig.height=8,fig.width=14, echo=TRUE}
+# convert column "date" into datetime format:
+dataNew$date<-strptime(dataNew$date,"%Y-%m-%d") 
+#1.Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+dataNew$day = ifelse(weekdays(dataNew$date) == "Saturday" | weekdays(dataNew$date) == "Sunday", "weekend", "weekday")
+#Convert the new variable into factor class
+dataNew <- transform(dataNew, day = factor(day))
+
+#2.Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
+
+#Remove date variable in order to run ddplyr function
+dataNew<-dataNew[ , !names(dataNew) %in% c("date")] 
+
+#get the average datasets both for weekday and weekend
+StepsPerIntervealDay<-ddply(dataNew, c("interval","day"),summarize, StepMean=mean(steps,na.rm = TRUE))
+#StepsPerIntervealWeekday<-StepsPerIntervealDay[StepsPerIntervealDay$day=="weekday",]
+#StepsPerIntervealWeekend<-StepsPerIntervealDay[StepsPerIntervealDay$day=="weekend",]
+
+xyplot(StepMean ~ interval | day  , data = StepsPerIntervealDay, layout = c(1, 2))
+```
