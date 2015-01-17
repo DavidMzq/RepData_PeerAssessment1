@@ -5,7 +5,7 @@ output:
     keep_md: true
 ---
 
-#### Special Note: As we could notice there's post in discussion forum of this course about [Make a Histogram.not a Bar](https://class.coursera.org/repdata-010/forum/thread?thread_id=9). I'm sure there are different thoughts on this, so I listed both kind of histogram plot from Base Graphic system(histogram, not bar) and ggplot2 sysrtem (in which geom_histogram is same as geom_bar).
+#### Special Note: As we could notice there's post in discussion forum of this course about [Make a Histogram.not a Bar](https://class.coursera.org/repdata-010/forum/thread?thread_id=9). I'm sure there are different thoughts on this, so I listed both kind of histogram plot from Base Graphic system(histogram, not bar) and ggplot2 system (in which geom_histogram is same as geom_bar).
 ## Loading and preprocessing the data
 ### 1. Load the data (unzip the original zip file and get activity.csv)
 ```{r GetData,echo=TRUE,results="hide"}
