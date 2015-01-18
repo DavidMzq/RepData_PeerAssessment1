@@ -25,6 +25,7 @@ data <- transform(data, interval = factor(interval))
 ### 1.Make a histogram of the total number of steps taken each day
 
 ```r
+# get an array StepSumPerDay with total number of steps per day
 StepSumPerDay <- tapply(data$steps, data$date, FUN = sum)
 hist(StepSumPerDay,breaks=20,col = "blue",main="Histogram of total number of steps per day",xlab="Total number of Steps per day(steps)",ylab="Frequency (days)")
 ```
@@ -38,10 +39,13 @@ hist(StepSumPerDay,breaks=20,col = "blue",main="Histogram of total number of ste
 options(warn=-1)
 #install.packages("ggplot2")
 library(ggplot2)
+# Since array StepSumPerDay contain both date string as its name and total number of steps per day, so create a new data frame newDF to contain both date and steps as two variables.
 newDF<-data.frame(date=names(StepSumPerDay), stepSum=StepSumPerDay)
 ggplot(newDF,aes(x=date,y=stepSum))+
         geom_histogram(stat='identity', fill="lightblue", colour="black")+
-        theme(axis.text.x = element_text(angle=60, hjust=1))
+        theme(axis.text.x = element_text(angle=60, hjust=1)) +
+        labs(x = expression("Date"))  + 
+        labs(y = "Total Steps per day")
 ```
 
 ![plot of chunk GetMeanStepsPerDay2](figure/GetMeanStepsPerDay2-1.png) 
@@ -76,7 +80,9 @@ summary(StepSumPerDay,rm.na=T)[4]
 ```r
 #install.packages("plyr")
 library(plyr)
+# Create a new data frame StepsPerInterveal to get the mean value of steps based on variable interval across all days.
 StepsPerInterveal<-ddply(data, c("interval"),summarize, StepMean=mean(steps,na.rm = TRUE))
+# Base graphic system
 with(StepsPerInterveal, plot(interval, StepMean,type="l",xlab = "Interval",ylab="Averaged Steps",col="blue")) 
 lines(StepsPerInterveal$interval, StepsPerInterveal$StepMean,type="l",xlab = "Interval",ylab="Averaged Steps",col="blue")
 ```
@@ -84,14 +90,28 @@ lines(StepsPerInterveal$interval, StepsPerInterveal$StepMean,type="l",xlab = "In
 ![plot of chunk GetStepsPerInterval](figure/GetStepsPerInterval-1.png) 
 
 ### 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
-#### Base on the plot above, apparently we can observe that the interval 845 (it's 8:45AM) has the maximum averaged number of steps each day.
+###Calculate the maxium number of steps:
 
+```r
+# get the maxium value row position
+maxPosition<-which.max(StepsPerInterveal$StepMean)
+# get the maxium stepMean value and its interval value
+StepsPerInterveal[maxPosition,]
+```
+
+```
+##     interval StepMean
+## 104      835 206.1698
+```
+#### Base on the Calculated number and observed plot above, we can konw that the interval 835 (it's 8:35AM) has the maximum averaged number of steps each day.
+  
   
 ## Imputing missing values
 ### 1.Calculate and report the total number of missing values in the dataset 
 
 
 ```r
+#Get the NA total number
 NAsum<-sum(is.na(data$steps))
 ```
 ####The total number of missing values is: 2304
@@ -109,7 +129,9 @@ dataNew$steps[is.na(dataNew$steps)]<- StepsPerInterveal$StepMean[match(dataNew$i
 ### 4.Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day
 
 ```r
+# get another array StepSumPerDayNew with total number of steps per day, after filling all NAs.
 StepSumPerDayNew <- tapply(dataNew$steps, dataNew$date, FUN = sum)
+#Histogram from base graphic system
 hist(StepSumPerDayNew,breaks=20,col="green",main="Histogram of total number of steps per day(NA filled)",xlab="Total number of Steps per day(steps)",ylab="Frequency(days)")
 ```
 
@@ -118,10 +140,13 @@ hist(StepSumPerDayNew,breaks=20,col="green",main="Histogram of total number of s
 ###For Detailed steps per day distribution, see another histogram plot from ggplot2 below
 
 ```r
+# Since array StepSumPerDayNew contain both date string as its name and total number of steps per day, so create a new data frame newDF to contain both date and steps as two variables.
 newDF<-data.frame(date=names(StepSumPerDayNew), stepSum=StepSumPerDayNew)
 ggplot(newDF,aes(x=date,y=stepSum))+
         geom_histogram(stat='identity', fill="lightblue", colour="black")+
-        theme(axis.text.x = element_text(angle=60, hjust=1))
+        theme(axis.text.x = element_text(angle=60, hjust=1)) +
+        labs(x = expression("Date (Missing data filled)"))  + 
+        labs(y = "Total Steps per day")
 ```
 
 ![plot of chunk GetMeanStepsPerDayfromNewData2](figure/GetMeanStepsPerDayfromNewData2-1.png) 
@@ -161,6 +186,7 @@ summary(StepSumPerDayNew,rm.na=T)[4]
 ```r
 # convert column "date" into datetime format:
 dataNew$date<-strptime(dataNew$date,"%Y-%m-%d") 
+# Add a new variable(column) named day to contain two levels "weekday" and "weekend".
 dataNew$day = ifelse(weekdays(dataNew$date) == "Saturday" | weekdays(dataNew$date) == "Sunday", "weekend", "weekday")
 #Convert the new variable into factor class
 dataNew <- transform(dataNew, day = factor(day))
@@ -168,9 +194,11 @@ dataNew <- transform(dataNew, day = factor(day))
 ### 2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
 
 ```r
+# Use Lattice graphic system, just for coherent with the original example.
 library(lattice)
-#get the average dataset both for weekday and weekend
+#get the dataset StepsPerIntervealDay with averaged steps value per interval, while containing both weekday and weekend mark in day variable.
 StepsPerIntervealDay<-ddply(dataNew, c("interval","day"),summarize, StepMean=mean(steps,na.rm = TRUE))
+#draw plot panel in whihc day as condition to split weekday and weekend into separated two plots.
 xyplot(StepMean ~ interval | day , data = StepsPerIntervealDay, type="l",main="Averaged Steps on Weekday and Weekend ",ylab = "Averaged Steps", xlab = "Interval", scales=list(y=list(tick.number=15),x=list(tick.number=25,at = seq(1, 288, 15))), layout = c(1, 2))
 ```
 
